@@ -52,7 +52,10 @@ type Terminal struct {
 	updatePending atomic.Bool
 }
 
-func New(shell string, cols, rows, scrollbackMax int, env []string, dir string) (*Terminal, error) {
+// New spawns the terminal program in a fresh PTY. `args` are passed to the
+// program unchanged (e.g. Shell="pi", Args=["--model", "openrouter/free"]); a
+// plain shell call site simply omits them.
+func New(shell string, cols, rows, scrollbackMax int, env []string, dir string, args ...string) (*Terminal, error) {
 	if shell == "" {
 		shell = defaultShell()
 	}
@@ -82,7 +85,7 @@ func New(shell string, cols, rows, scrollbackMax int, env []string, dir string) 
 		io.WriteString(pt, s)
 	})
 
-	cmd := pt.Command(shell)
+	cmd := pt.Command(shell, args...)
 	// Verify dir exists before setting it — chaos monkey and random commands can
 	// delete the workspace dir, causing Start to fail with "no such file or directory"
 	if dir != "" {

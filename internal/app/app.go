@@ -35,8 +35,19 @@ const hoverGraceMargin = 3
 
 type TerminalTab struct {
 	ID     string
+	Label  string
 	Term   *terminal.Terminal
 	Widget *ui.TerminalWidget
+}
+
+// TerminalSpec describes the program one terminal tab runs. The zero value
+// inherits the global terminal settings and the workspace directory.
+type TerminalSpec struct {
+	Shell string
+	Args  []string
+	Cwd   string
+	// Label is a short badge for the strip ("pi", "lg") and the tab record.
+	Label string
 }
 
 type App struct {
@@ -393,7 +404,15 @@ func (a *App) ToggleBottomPanel() {
 	}
 }
 
+// SpawnTerminal opens a terminal tab running the configured shell.
 func (a *App) SpawnTerminal() {
+	a.SpawnTerminalSpec(TerminalSpec{})
+}
+
+// SpawnTerminalSpec opens a terminal tab for a specific program. A caller that
+// names a Shell supplies its own Args (empty = run the program bare); an empty
+// Shell inherits both from the global terminal settings.
+func (a *App) SpawnTerminalSpec(spec TerminalSpec) {
 	r := a.ContentSplit.GetRect()
 	var cols, rows int
 	if a.ContentSplit.Position == ui.SplitRight {
@@ -418,7 +437,14 @@ func (a *App) SpawnTerminal() {
 		rows = 24
 	}
 
-	t, err := terminal.New(a.Settings.Terminal.Shell, cols, rows, a.Settings.Terminal.Scrollback, nil, a.Workspace.Primary())
+	if spec.Shell == "" {
+		spec.Shell = a.Settings.Terminal.Shell
+		spec.Args = a.Settings.Terminal.Args
+	}
+	if spec.Cwd == "" {
+		spec.Cwd = a.Workspace.Primary()
+	}
+	t, err := terminal.New(spec.Shell, cols, rows, a.Settings.Terminal.Scrollback, nil, spec.Cwd, spec.Args...)
 	if err != nil {
 		slog.Error("terminal.New", "err", err)
 		a.StatusError("Failed to open terminal: " + err.Error())
@@ -426,7 +452,7 @@ func (a *App) SpawnTerminal() {
 	}
 
 	tw := ui.NewTerminalWidget(t, a.Palette)
-	tw.WorkDir = a.Workspace.Primary()
+	tw.WorkDir = spec.Cwd
 	tw.OnOpenURL = func(url string) {
 		OpenURL(url)
 	}
@@ -439,8 +465,8 @@ func (a *App) SpawnTerminal() {
 	}
 
 	panelID := fmt.Sprintf("terminal-%d", len(a.Terminals))
-	a.Terminals = append(a.Terminals, TerminalTab{ID: panelID, Term: t, Widget: tw})
-	a.TerminalPanel.AddTerminal(tw)
+	a.Terminals = append(a.Terminals, TerminalTab{ID: panelID, Label: spec.Label, Term: t, Widget: tw})
+	a.TerminalPanel.AddTerminalLabeled(tw, spec.Label)
 	a.BottomPanel.SetActivePanel("terminal")
 
 	if !a.ContentSplit.ShowBottom {
