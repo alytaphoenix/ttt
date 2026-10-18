@@ -45,7 +45,10 @@ type TerminalTab struct {
 type TerminalSpec struct {
 	Shell string
 	Args  []string
-	Cwd   string
+	// Env are extra KEY=VALUE entries for the child (the process environment is
+	// inherited; these are appended).
+	Env []string
+	Cwd string
 	// Label is a short badge for the strip ("pi", "lg") and the tab record.
 	Label string
 }
@@ -447,7 +450,7 @@ func (a *App) SpawnTerminalSpec(spec TerminalSpec) (string, error) {
 	if spec.Cwd == "" {
 		spec.Cwd = a.Workspace.Primary()
 	}
-	t, err := terminal.New(spec.Shell, cols, rows, a.Settings.Terminal.Scrollback, nil, spec.Cwd, spec.Args...)
+	t, err := terminal.New(spec.Shell, cols, rows, a.Settings.Terminal.Scrollback, spec.Env, spec.Cwd, spec.Args...)
 	if err != nil {
 		slog.Error("terminal.New", "err", err)
 		a.StatusError("Failed to open terminal: " + err.Error())

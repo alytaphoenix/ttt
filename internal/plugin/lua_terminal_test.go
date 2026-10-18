@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"errors"
+	"sort"
 	"testing"
 
 	lua "github.com/yuin/gopher-lua"
@@ -10,6 +11,7 @@ import (
 type mockTerminalAPI struct {
 	shell string
 	args  []string
+	env   []string
 	cwd   string
 	label string
 
@@ -22,8 +24,8 @@ type mockTerminalAPI struct {
 	spawnErr error
 }
 
-func (m *mockTerminalAPI) TerminalSpawn(shell string, args []string, cwd, label string) (string, error) {
-	m.shell, m.args, m.cwd, m.label = shell, args, cwd, label
+func (m *mockTerminalAPI) TerminalSpawn(shell string, args, env []string, cwd, label string) (string, error) {
+	m.shell, m.args, m.env, m.cwd, m.label = shell, args, env, cwd, label
 	if m.spawnErr != nil {
 		return "", m.spawnErr
 	}
@@ -68,6 +70,7 @@ func TestTerminalSpawnPassesTheSpec(t *testing.T) {
 			args = {"--model", "openrouter/free"},
 			cwd = "/tmp/project",
 			label = "pi",
+			env = {FORSETI_AGENT_NAME = "planner", EXTRA = "1"},
 		}
 	`)
 	if err != nil {
@@ -90,6 +93,10 @@ func TestTerminalSpawnPassesTheSpec(t *testing.T) {
 	}
 	if mock.label != "pi" {
 		t.Errorf("label = %q", mock.label)
+	}
+	sort.Strings(mock.env) // Lua map iteration order is unspecified
+	if len(mock.env) != 2 || mock.env[0] != "EXTRA=1" || mock.env[1] != "FORSETI_AGENT_NAME=planner" {
+		t.Errorf("env = %v", mock.env)
 	}
 }
 

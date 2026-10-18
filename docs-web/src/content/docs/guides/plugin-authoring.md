@@ -619,6 +619,7 @@ local id, err = term.spawn{
   args  = {"--model", "…"},        -- argv, verbatim
   cwd   = "/path/to/project",      -- working directory ("" = the workspace)
   label = "pi",                    -- short badge in the tab strip (2 chars shown)
+  env   = {FORSETI_AGENT = "a1"},  -- extra env (map or {"K=V"} array)
 }
 if not id then error(err) end
 

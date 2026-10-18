@@ -118,7 +118,7 @@ type TerminalAPI interface {
 	// TerminalSpawn opens a terminal tab for a program and returns its id. An
 	// empty shell inherits the configured terminal program; a named shell uses
 	// exactly the args given.
-	TerminalSpawn(shell string, args []string, cwd, label string) (string, error)
+	TerminalSpawn(shell string, args, env []string, cwd, label string) (string, error)
 	// TerminalSend writes text to a tab's PTY (a trailing newline is the
 	// caller's job).
 	TerminalSend(id, text string) error

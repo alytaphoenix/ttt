@@ -65,9 +65,21 @@ func termSpawn(p *Plugin) lua.LGFunction {
 				args = append(args, v.String())
 			})
 		}
+		// env accepts a map (KEY = "value") or an array of "KEY=value" strings
+		var env []string
+		if t, ok := L.GetField(spec, "env").(*lua.LTable); ok {
+			t.ForEach(func(k, v lua.LValue) {
+				if ks, ok := k.(lua.LString); ok && ks != "" {
+					env = append(env, string(ks)+"="+v.String())
+					return
+				}
+				env = append(env, v.String())
+			})
+		}
 		id, err := p.Terminal.TerminalSpawn(
 			termField(L, spec, "shell"),
 			args,
+			env,
 			termField(L, spec, "cwd"),
 			termField(L, spec, "label"),
 		)
