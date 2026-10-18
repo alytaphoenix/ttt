@@ -407,3 +407,24 @@ func TestFsAccessResolve(t *testing.T) {
 		t.Error("* must grant every path")
 	}
 }
+
+func TestTerminalPermissions(t *testing.T) {
+	if err := (PermissionSet{TerminalControl: true}).Check("terminal.control"); err != nil {
+		t.Fatalf("terminal.control granted but Check failed: %v", err)
+	}
+	if err := (PermissionSet{}).Check("terminal.read"); err == nil {
+		t.Fatal("terminal.read must be denied without the grant")
+	}
+
+	diff := DiffPermissions(PermissionSet{}, PermissionSet{TerminalControl: true, TerminalRead: true})
+	if len(diff.Entries) != 2 {
+		t.Fatalf("expected two requested permissions, got %+v", diff.Entries)
+	}
+	granted := DiffPermissions(
+		PermissionSet{TerminalControl: true, TerminalRead: true},
+		PermissionSet{TerminalControl: true, TerminalRead: true},
+	)
+	if !granted.IsEmpty() {
+		t.Fatalf("granted permissions must not show as required: %+v", granted.Entries)
+	}
+}

@@ -448,6 +448,36 @@ type PluginSystemAPI struct {
 	onExec func()
 }
 
+// PluginTerminalAPI adapts the App's terminal tabs to the plugin
+// `ttt.terminal` module (terminal.control / terminal.read).
+type PluginTerminalAPI struct {
+	app *App
+}
+
+func NewPluginTerminalAPI(a *App) *PluginTerminalAPI {
+	return &PluginTerminalAPI{app: a}
+}
+
+func (t *PluginTerminalAPI) TerminalSpawn(shell string, args []string, cwd, label string) (string, error) {
+	return t.app.SpawnTerminalSpec(TerminalSpec{Shell: shell, Args: args, Cwd: cwd, Label: label})
+}
+
+func (t *PluginTerminalAPI) TerminalSend(id, text string) error {
+	return t.app.SendToTerminal(id, text)
+}
+
+func (t *PluginTerminalAPI) TerminalTail(id string, maxBytes int) (string, error) {
+	return t.app.TerminalTail(id, maxBytes)
+}
+
+func (t *PluginTerminalAPI) TerminalFocus(id string) error {
+	return t.app.FocusTerminal(id)
+}
+
+func (t *PluginTerminalAPI) TerminalList() []plugin.TerminalInfo {
+	return t.app.ListTerminals()
+}
+
 func NewPluginSystemAPI() *PluginSystemAPI {
 	return &PluginSystemAPI{}
 }

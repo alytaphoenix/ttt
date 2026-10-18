@@ -307,6 +307,8 @@ type PermissionSet struct {
 	FsWrite           FsAccess    `json:"fs.write,omitzero"`
 	SystemExec        []string    `json:"system.exec,omitempty"`
 	SystemEnv         bool        `json:"system.env,omitempty"`
+	TerminalControl   bool        `json:"terminal.control,omitempty"`
+	TerminalRead      bool        `json:"terminal.read,omitempty"`
 	NetworkHTTP       NetworkHTTP `json:"network.http,omitempty"`
 	EventsFile        bool        `json:"events.file,omitempty"`
 	EventsEditor      bool        `json:"events.editor,omitempty"`
@@ -356,6 +358,8 @@ func DiffPermissions(granted, requested PermissionSet) PermissionDiff {
 	checkFs("fs.read", granted.FsRead, requested.FsRead)
 	checkFs("fs.write", granted.FsWrite, requested.FsWrite)
 	check("system.env", granted.SystemEnv, requested.SystemEnv)
+	check("terminal.control", granted.TerminalControl, requested.TerminalControl)
+	check("terminal.read", granted.TerminalRead, requested.TerminalRead)
 	check("events.file", granted.EventsFile, requested.EventsFile)
 	check("events.editor", granted.EventsEditor, requested.EventsEditor)
 	check("settings", granted.Settings, requested.Settings)
@@ -432,6 +436,10 @@ func (ps PermissionSet) Check(perm string) error {
 		allowed = ps.FsWrite.Enabled()
 	case "system.env":
 		allowed = ps.SystemEnv
+	case "terminal.control":
+		allowed = ps.TerminalControl
+	case "terminal.read":
+		allowed = ps.TerminalRead
 	case "network.http":
 		allowed = ps.NetworkHTTP.Enabled()
 	case "events.file":

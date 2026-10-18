@@ -80,6 +80,7 @@ type Plugin struct {
 	Markdown           config.MarkdownSettings
 	Borders            *term.BorderSet
 	AppVersion         string
+	Terminal           TerminalAPI
 	SimulateClick      func(x, y int)
 	SimulateDrag       func(x1, y1, x2, y2 int)
 	ScreenshotToFile   func(path string) error
@@ -161,6 +162,7 @@ func (p *Plugin) Init() error {
 	setupBookmarksModule(p.State, p)
 	setupFsModule(p.State, p)
 	setupSystemModule(p.State, p)
+	setupTerminalModule(p.State, p)
 	setupNetModule(p.State, p)
 	setupEventsModule(p.State, p)
 	setupJSONModule(p.State)
@@ -207,6 +209,7 @@ func (p *Plugin) InitFromSource(source string) error {
 	setupBookmarksModule(p.State, p)
 	setupFsModule(p.State, p)
 	setupSystemModule(p.State, p)
+	setupTerminalModule(p.State, p)
 	setupNetModule(p.State, p)
 	setupEventsModule(p.State, p)
 	setupJSONModule(p.State)
