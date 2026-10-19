@@ -19,6 +19,7 @@ type mockTerminalAPI struct {
 	sentText string
 	tail     string
 	tailMax  int
+	screen   string
 	focused  string
 	closed   string
 	infos    []TerminalInfo
@@ -41,6 +42,10 @@ func (m *mockTerminalAPI) TerminalSend(id, text string) error {
 func (m *mockTerminalAPI) TerminalTail(id string, maxBytes int) (string, error) {
 	m.tailMax = maxBytes
 	return m.tail, nil
+}
+
+func (m *mockTerminalAPI) TerminalScreen(id string) (string, error) {
+	return m.screen, nil
 }
 
 func (m *mockTerminalAPI) TerminalClose(id string) error {
@@ -145,6 +150,7 @@ func TestTerminalSendReadFocusList(t *testing.T) {
 		local term = require("ttt.terminal")
 		term.send("terminal-3", "review this\n")
 		_G.tail = term.read("terminal-3", 4000)
+		_G.screen = term.screen("terminal-3")
 		term.focus("terminal-3")
 		term.close("terminal-3")
 		local list = term.list()

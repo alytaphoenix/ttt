@@ -470,6 +470,10 @@ func (t *PluginTerminalAPI) TerminalTail(id string, maxBytes int) (string, error
 	return t.app.TerminalTail(id, maxBytes)
 }
 
+func (t *PluginTerminalAPI) TerminalScreen(id string) (string, error) {
+	return t.app.TerminalScreen(id)
+}
+
 func (t *PluginTerminalAPI) TerminalFocus(id string) error {
 	return t.app.FocusTerminal(id)
 }

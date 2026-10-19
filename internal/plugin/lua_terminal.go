@@ -29,6 +29,7 @@ func setupTerminalModule(L *lua.LState, p *Plugin) {
 		}
 		if p.Granted.TerminalRead {
 			L.SetField(mod, "read", L.NewFunction(termRead(p)))
+			L.SetField(mod, "screen", L.NewFunction(termScreen(p)))
 			L.SetField(mod, "list", L.NewFunction(termList(p)))
 		}
 		L.Push(mod)
@@ -122,6 +123,22 @@ func termRead(p *Plugin) lua.LGFunction {
 			return termErr(L, err.Error())
 		}
 		L.Push(lua.LString(tail))
+		return 1
+	}
+}
+
+// termScreen(id) -> text | nil, err
+func termScreen(p *Plugin) lua.LGFunction {
+	return func(L *lua.LState) int {
+		if p.Terminal == nil {
+			return termErr(L, "terminal API not available")
+		}
+		id := L.CheckString(1)
+		text, err := p.Terminal.TerminalScreen(id)
+		if err != nil {
+			return termErr(L, err.Error())
+		}
+		L.Push(lua.LString(text))
 		return 1
 	}
 }

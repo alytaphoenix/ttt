@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -335,4 +336,28 @@ func (t *Terminal) RawTail() []byte {
 	out := make([]byte, len(t.rawTail))
 	copy(out, t.rawTail)
 	return out
+}
+
+// ScreenText renders the visible screen as plain lines (trailing blanks
+// trimmed). Unlike RawTail, this is terminal-emulator output: real rows, no
+// ANSI escapes — what a human sees. Plugins use it for pattern watches.
+func (t *Terminal) ScreenText() string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	buf := t.term.NormalBuffer()
+	if t.term.IsAltBufferActive() {
+		// a TUI (pi, lazygit, vim) renders in the alternate screen: that is
+		// the text a human sees
+		buf = t.term.AltBuffer()
+	}
+	rows := t.rows
+	var lines []string
+	for y := 0; y < rows; y++ {
+		idx := buf.YBase + y
+		if idx >= buf.Lines.Length() {
+			break
+		}
+		lines = append(lines, buf.Lines.Get(idx).TranslateToString(true, 0, -1))
+	}
+	return strings.Join(lines, "\n")
 }

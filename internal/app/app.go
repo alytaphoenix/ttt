@@ -541,6 +541,16 @@ func (a *App) FocusTerminal(id string) error {
 	return nil
 }
 
+// TerminalScreen returns the visible screen of one tab as plain text.
+func (a *App) TerminalScreen(id string) (string, error) {
+	for _, tt := range a.Terminals {
+		if tt.ID == id {
+			return tt.Term.ScreenText(), nil
+		}
+	}
+	return "", fmt.Errorf("terminal %q not found", id)
+}
+
 // ListTerminals reports the open tabs to a plugin.
 func (a *App) ListTerminals() []plugin.TerminalInfo {
 	out := make([]plugin.TerminalInfo, 0, len(a.Terminals))

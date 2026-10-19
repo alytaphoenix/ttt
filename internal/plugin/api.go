@@ -125,6 +125,9 @@ type TerminalAPI interface {
 	// TerminalTail returns the last maxBytes of the tab's raw PTY output
 	// (ANSI escapes included; maxBytes <= 0 means the whole tail).
 	TerminalTail(id string, maxBytes int) (string, error)
+	// TerminalScreen returns the visible screen as plain lines (no ANSI,
+	// trailing blanks trimmed).
+	TerminalScreen(id string) (string, error)
 	// TerminalFocus reveals the panel and selects the tab.
 	TerminalFocus(id string) error
 	// TerminalClose kills the tab's PTY and removes the tab.
