@@ -521,6 +521,8 @@ func (ps PermissionSet) DisplayEntries() []PermissionDiffEntry {
 	for _, p := range ps.FsWrite.Paths {
 		entries = append(entries, PermissionDiffEntry{Name: "Write files", Value: fsPathLabel(p)})
 	}
+	add("Control terminals", ps.TerminalControl)
+	add("Read terminals", ps.TerminalRead)
 	add("Environment", ps.SystemEnv)
 	add("File events", ps.EventsFile)
 	add("Editor events", ps.EventsEditor)
@@ -566,6 +568,8 @@ func IntersectPermissions(granted, declared PermissionSet) PermissionSet {
 		FsWrite:           intersectFs(granted.FsWrite, declared.FsWrite),
 		SystemExec:        intersectStrings(granted.SystemExec, declared.SystemExec),
 		SystemEnv:         granted.SystemEnv && declared.SystemEnv,
+		TerminalControl:   granted.TerminalControl && declared.TerminalControl,
+		TerminalRead:      granted.TerminalRead && declared.TerminalRead,
 		NetworkHTTP:       intersectNetwork(granted.NetworkHTTP, declared.NetworkHTTP),
 		EventsFile:        granted.EventsFile && declared.EventsFile,
 		EventsEditor:      granted.EventsEditor && declared.EventsEditor,
