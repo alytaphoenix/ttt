@@ -20,6 +20,7 @@ type mockTerminalAPI struct {
 	tail     string
 	tailMax  int
 	focused  string
+	closed   string
 	infos    []TerminalInfo
 	spawnErr error
 }
@@ -40,6 +41,11 @@ func (m *mockTerminalAPI) TerminalSend(id, text string) error {
 func (m *mockTerminalAPI) TerminalTail(id string, maxBytes int) (string, error) {
 	m.tailMax = maxBytes
 	return m.tail, nil
+}
+
+func (m *mockTerminalAPI) TerminalClose(id string) error {
+	m.closed = id
+	return nil
 }
 
 func (m *mockTerminalAPI) TerminalFocus(id string) error {
@@ -140,6 +146,7 @@ func TestTerminalSendReadFocusList(t *testing.T) {
 		term.send("terminal-3", "review this\n")
 		_G.tail = term.read("terminal-3", 4000)
 		term.focus("terminal-3")
+		term.close("terminal-3")
 		local list = term.list()
 		_G.first_id = list[1].id
 		_G.first_label = list[1].label
@@ -159,6 +166,9 @@ func TestTerminalSendReadFocusList(t *testing.T) {
 	}
 	if mock.focused != "terminal-3" {
 		t.Errorf("focus = %q", mock.focused)
+	}
+	if mock.closed != "terminal-3" {
+		t.Errorf("close = %q", mock.closed)
 	}
 	if p.State.GetGlobal("first_id").String() != "terminal-0" {
 		t.Errorf("list id = %q", p.State.GetGlobal("first_id").String())

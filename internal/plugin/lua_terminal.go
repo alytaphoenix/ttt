@@ -11,9 +11,10 @@ import (
 //	term.send(id, "review this\n")
 //	local tail = term.read(id, 4000)   -- raw PTY bytes, ANSI included
 //	term.focus(id)
+//	term.close(id)
 //	for _, t in ipairs(term.list()) do … end
 //
-// spawn/send/focus require `terminal.control`; read/list require
+// spawn/send/focus/close require `terminal.control`; read/list require
 // `terminal.read`. Missing permissions omit the functions entirely (matching the
 // system module), so `if term.spawn then … end` is the capability check.
 // Errors follow the system module's convention: (nil, "message").
@@ -24,6 +25,7 @@ func setupTerminalModule(L *lua.LState, p *Plugin) {
 			L.SetField(mod, "spawn", L.NewFunction(termSpawn(p)))
 			L.SetField(mod, "send", L.NewFunction(termSend(p)))
 			L.SetField(mod, "focus", L.NewFunction(termFocus(p)))
+			L.SetField(mod, "close", L.NewFunction(termClose(p)))
 		}
 		if p.Granted.TerminalRead {
 			L.SetField(mod, "read", L.NewFunction(termRead(p)))
@@ -132,6 +134,21 @@ func termFocus(p *Plugin) lua.LGFunction {
 		}
 		id := L.CheckString(1)
 		if err := p.Terminal.TerminalFocus(id); err != nil {
+			return termErr(L, err.Error())
+		}
+		L.Push(lua.LTrue)
+		return 1
+	}
+}
+
+// termClose(id) -> true | nil, err
+func termClose(p *Plugin) lua.LGFunction {
+	return func(L *lua.LState) int {
+		if p.Terminal == nil {
+			return termErr(L, "terminal API not available")
+		}
+		id := L.CheckString(1)
+		if err := p.Terminal.TerminalClose(id); err != nil {
 			return termErr(L, err.Error())
 		}
 		L.Push(lua.LTrue)

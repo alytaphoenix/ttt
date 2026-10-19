@@ -127,6 +127,8 @@ type TerminalAPI interface {
 	TerminalTail(id string, maxBytes int) (string, error)
 	// TerminalFocus reveals the panel and selects the tab.
 	TerminalFocus(id string) error
+	// TerminalClose kills the tab's PTY and removes the tab.
+	TerminalClose(id string) error
 	TerminalList() []TerminalInfo
 }
 

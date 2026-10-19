@@ -474,6 +474,16 @@ func (t *PluginTerminalAPI) TerminalFocus(id string) error {
 	return t.app.FocusTerminal(id)
 }
 
+func (t *PluginTerminalAPI) TerminalClose(id string) error {
+	for _, info := range t.app.ListTerminals() {
+		if info.ID == id {
+			t.app.CloseTerminal(id)
+			return nil
+		}
+	}
+	return fmt.Errorf("terminal %q not found", id)
+}
+
 func (t *PluginTerminalAPI) TerminalList() []plugin.TerminalInfo {
 	return t.app.ListTerminals()
 }
